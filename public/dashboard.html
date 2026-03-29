@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Money Manager - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>💰 Money Manager</h2>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-section="overview">📊 Overview</a>
+        <a href="#" class="nav-item" data-section="friends">👥 Friends</a>
+        <a href="#" class="nav-item" data-section="add-friend">➕ Add Friend</a>
+        <a href="#" class="nav-item" data-section="notifications">🔔 Notifications</a>
+        <a href="#" class="nav-item" data-section="summary">📥 Download Summary</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="userDisplay"></span>
+        <button id="logoutBtn" class="btn btn-small">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Overview Section -->
+      <section id="overview" class="section active">
+        <h1>Dashboard Overview</h1>
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-label">Total Lent</div>
+            <div class="stat-value" id="totalLent">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Interest</div>
+            <div class="stat-value" id="totalInterest">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Grand Total</div>
+            <div class="stat-value" id="grandTotal">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Records</div>
+            <div class="stat-value" id="activeRecords">0</div>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 30px;">Upcoming Due Dates</h2>
+        <div id="upcomingDues" class="records-list"></div>
+      </section>
+
+      <!-- Friends Section -->
+      <section id="friends" class="section">
+        <div class="section-header">
+          <h1>Friends Records</h1>
+          <button class="btn btn-primary" onclick="switchSection('add-friend')">➕ Add New Friend</button>
+        </div>
+
+        <div class="filters">
+          <input type="search" id="searchFriend" placeholder="Search friends..." class="search-input">
+          <select id="filterStatus" class="filter-select">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Cleared">Cleared</option>
+          </select>
+        </div>
+
+        <div id="friendsList" class="records-list"></div>
+      </section>
+
+      <!-- Add Friend Section -->
+      <section id="add-friend" class="section">
+        <h1>Add New Friend Record</h1>
+        <form id="addFriendForm" class="form-card">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="friendName">Friend's Name *</label>
+              <input type="text" id="friendName" placeholder="Enter name" required>
+            </div>
+            <div class="form-group">
+              <label for="friendPhone">Phone Number</label>
+              <input type="tel" id="friendPhone" placeholder="Enter phone number">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="friendAddress">Address</label>
+              <input type="text" id="friendAddress" placeholder="Enter address">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="amountGiven">Amount Given (INR) *</label>
+              <input type="number" id="amountGiven" placeholder="0.00" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="interestAmount">Interest Amount (INR)</label>
+              <input type="number" id="interestAmount" placeholder="0.00" min="0" step="0.01">
+              <small>Enter rupees interest. Leave blank to auto-calc using old rate if provided.</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lendDate">Lend Date *</label>
+              <input type="date" id="lendDate" required>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Due Date *</label>
+              <input type="date" id="dueDate" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="friendNotes">Notes</label>
+              <textarea id="friendNotes" placeholder="Additional notes..."></textarea>
+            </div>
+          </div>
+
+          <div id="addFriendError" class="error-message"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Friend Record</button>
+            <button type="button" class="btn btn-secondary" onclick="switchSection('friends')">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Notifications Section -->
+      <section id="notifications" class="section">
+        <h1>Notifications</h1>
+        <div id="notificationsList" class="notifications-list"></div>
+      </section>
+
+      <!-- Summary/Download Section -->
+      <section id="summary" class="section">
+        <h1>Download Summary</h1>
+        <div class="summary-card">
+          <p>Download a summary of all your lending records in your preferred format.</p>
+          <div class="summary-actions">
+            <button class="btn btn-primary" id="downloadJSON">📄 Download as JSON</button>
+            <button class="btn btn-primary" id="downloadCSV">📊 Download as CSV</button>
+            <button class="btn btn-primary" id="downloadPDF">📑 Download as PDF</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Edit Friend Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Edit Friend Record</h2>
+      <form id="editFriendForm" class="form-card">
+        <input type="hidden" id="editFriendId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editFriendName">Friend's Name *</label>
+            <input type="text" id="editFriendName" required>
+          </div>
+          <div class="form-group">
+            <label for="editFriendPhone">Phone Number</label>
+            <input type="tel" id="editFriendPhone">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editFriendAddress">Address</label>
+            <input type="text" id="editFriendAddress">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editAmountGiven">Amount Given (INR) *</label>
+            <input type="number" id="editAmountGiven" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="editInterestAmount">Interest Amount (INR)</label>
+            <input type="number" id="editInterestAmount" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editDueDate">Due Date *</label>
+            <input type="date" id="editDueDate" required>
+          </div>
+          <div class="form-group">
+            <label for="editStatus">Status</label>
+            <select id="editStatus">
+              <option value="Active">Active</option>
+              <option value="Cleared">Cleared</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editFriendNotes">Notes</label>
+            <textarea id="editFriendNotes"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editAadharUpload">Upload Aadhaar (PDF/JPG/PNG)</label>
+            <input type="file" id="editAadharUpload" accept=".pdf,.jpg,.jpeg,.png">
+            <button type="button" class="btn btn-small" onclick="uploadAadhar()">Upload Aadhaar</button>
+            <div id="aadharStatus" style="margin-top: 6px; font-size: 14px;"></div>
+          </div>
+        </div>
+
+        <div id="editError" class="error-message"></div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
