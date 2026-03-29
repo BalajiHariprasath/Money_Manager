@@ -10,11 +10,12 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+const DB_PATH = process.env.NODE_ENV === 'production' ? '/tmp/money-manager.db' : './money-manager.db';
 
 // Database setup
-const db = new sqlite3.Database('./money-manager.db', (err) => {
+const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.log('Database connection error:', err);
-  else console.log('Connected to SQLite database');
+  else console.log('Connected to SQLite database at:', DB_PATH);
 });
 
 // Middleware
